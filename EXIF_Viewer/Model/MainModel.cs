@@ -15,13 +15,27 @@ namespace EXIF_Viewer
     {
         private string? _selectedFile;
 
-        public string? SelctedFile
+        public string? SelectedFile
         {
             get { return _selectedFile; }
-            set { _selectedFile = value; 
-            OnPropertyChanged(nameof(SelctedFile)); 
+            set 
+            { 
+            _selectedFile = value; 
+            OnPropertyChanged(nameof(SelectedFile)); 
             }
         }
+        private string? _filePath;
+
+        public string? FilePath
+        {
+            get { return _filePath; }
+            set 
+            { 
+                _filePath = value;
+                OnPropertyChanged(nameof(FilePath));
+            }
+        }
+
 
 
         public event PropertyChangedEventHandler? PropertyChanged;

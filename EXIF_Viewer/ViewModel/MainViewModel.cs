@@ -19,8 +19,18 @@ namespace EXIF_Viewer
     public class MainViewModel : INotifyPropertyChanged
     {
         //바인딩 컨텍스트에서 모델을 찾을 수 없음
-        public MainModel Model = new();
-        
+        private MainModel _model = new();
+
+        public MainModel Model
+        {
+            get { return _model; }
+            set
+            { 
+                _model = value; 
+                OnPropertyChanged(nameof(Model)); 
+            }
+        }
+
         private ImageDetailsModel _imageDetailModel;
 
         public ImageDetailsModel _imageDetailsModel
@@ -28,7 +38,7 @@ namespace EXIF_Viewer
             get { return _imageDetailModel; }
             set {
                 _imageDetailModel = value;
-                OnPropertyChanged(nameof(_imageDetailsModel)); 
+                OnPropertyChanged(nameof(ImageDetailsModel)); 
             }
         }
 
@@ -63,8 +73,10 @@ namespace EXIF_Viewer
             bool? result = openFileDialog.ShowDialog();
             if (result == true)
             {
-                Model.SelctedFile = openFileDialog.SafeFileName;
-                OnPropertyChanged(nameof(Model.SelctedFile));
+                Model.FilePath = Path.GetDirectoryName(openFileDialog.FileName);
+                Model.SelectedFile = openFileDialog.SafeFileName;
+                OnPropertyChanged(nameof(Model.FilePath));
+                OnPropertyChanged(nameof(Model.SelectedFile));
                 FileInfo SelectedFile = new FileInfo(openFileDialog.FileName);
                 GetData(SelectedFile);
             }
