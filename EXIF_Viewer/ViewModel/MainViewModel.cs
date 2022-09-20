@@ -53,7 +53,7 @@ namespace EXIF_Viewer
             bool? result = openFileDialog.ShowDialog();
             if (result == true)
             { 
-                Model.SelectedFile = new FileInfo(openFileDialog.FileName);
+                
                 Model.FileDataTable = GetData(Model.SelectedFile);
                 OnPropertyChanged("Model.SelectedFile");
                 OnPropertyChanged("Model.FileDataTable");
