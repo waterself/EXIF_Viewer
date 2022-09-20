@@ -10,19 +10,32 @@ using System.Data;
 using System.ComponentModel;
 using EXIF_Viewer;
 using System.Windows.Input;
+using System.Net.WebSockets;
+using EXIF_Viewer.Model;
+using System.Collections.ObjectModel;
 
 namespace EXIF_Viewer
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        public MainModel Model = new MainModel();
+        //바인딩 컨텍스트에서 모델을 찾을 수 없음
+        public MainModel Model = new();
+        
+        private ImageDetailsModel _imageDetailModel;
+
+        public ImageDetailsModel _imageDetailsModel
+        {
+            get { return _imageDetailModel; }
+            set {
+                _imageDetailModel = value;
+                OnPropertyChanged(nameof(_imageDetailsModel)); 
+            }
+        }
 
         public ICommand FileSelectButtonCommand { get; set; }
         
         public MainViewModel()
         {
-            Model.FileDataTable = null;
-            Model.SelectedFile = null;
             FileSelectButtonCommand = new FileSelectButtonCommand(excuteMethod, canExcuteMethod);
         }
 
@@ -39,10 +52,7 @@ namespace EXIF_Viewer
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(String name)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         public void File_select_btn_click()
@@ -52,48 +62,67 @@ namespace EXIF_Viewer
             openFileDialog.Filter = "Images(.JPG)|*.jpg|Images(.jpeg)|*.jpeg";
             bool? result = openFileDialog.ShowDialog();
             if (result == true)
-            { 
-                
-                Model.FileDataTable = GetData(Model.SelectedFile);
-                OnPropertyChanged("Model.SelectedFile");
-                OnPropertyChanged("Model.FileDataTable");
-                GetData(Model.SelectedFile);
+            {
+                Model.SelctedFile = openFileDialog.SafeFileName;
+                OnPropertyChanged(nameof(Model.SelctedFile));
+                FileInfo SelectedFile = new FileInfo(openFileDialog.FileName);
+                GetData(SelectedFile);
             }
         }
-        public DataTable GetData(FileInfo f)
+        private ObservableCollection<ImageDetailsModel> _imageDetails = new();
+
+        public ObservableCollection<ImageDetailsModel> ImageDetails
         {
-            using (FileStream fs = new FileStream(f.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                DataTable MetaDataTable = new DataTable();
-                MetaDataTable.Columns.Add("attribute");
-                MetaDataTable.Columns.Add("value");
+            get { return _imageDetails; }
+            set { _imageDetails = value; }
+        }
 
-                BitmapSource image = BitmapFrame.Create(fs);
-                BitmapMetadata metaData = image.Metadata as BitmapMetadata;
+        public void GetData(FileInfo f)
+        {   
+            //객체 리소스를 사용 후 자동 정리
+            using FileStream fs = new(f.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                MetaDataTable.Rows.Add("ApplicaionName", metaData.ApplicationName);
-                MetaDataTable.Rows.Add("Author", metaData.Author);
-                MetaDataTable.Rows.Add("CameraManufacturer", metaData.CameraManufacturer);
-                MetaDataTable.Rows.Add("CameraModel", metaData.CameraModel);
-                MetaDataTable.Rows.Add("CanFreez", metaData.CanFreeze);
-                MetaDataTable.Rows.Add("Comment", metaData.Comment);
-                MetaDataTable.Rows.Add("CopyRight", metaData.Copyright);
-                MetaDataTable.Rows.Add("DateTaken", metaData.DateTaken);
-                MetaDataTable.Rows.Add("DependencyObjectType", metaData.DependencyObjectType);
-                MetaDataTable.Rows.Add("Dispatcher", metaData.Dispatcher);
-                MetaDataTable.Rows.Add("Format", metaData.Format);
-                MetaDataTable.Rows.Add("IsFixedSize", metaData.IsFixedSize);
-                MetaDataTable.Rows.Add("IsFrozen", metaData.IsFrozen);
-                MetaDataTable.Rows.Add("IsReadOnly", metaData.IsReadOnly);
-                MetaDataTable.Rows.Add("IsSealed", metaData.IsSealed);
-                MetaDataTable.Rows.Add("Keywords", metaData.Keywords);
-                MetaDataTable.Rows.Add("Location", metaData.Location);
-                MetaDataTable.Rows.Add("Rating", metaData.Rating);
-                MetaDataTable.Rows.Add("Subject", metaData.Subject);
-                MetaDataTable.Rows.Add("Title", metaData.Title);
+/*            DataTable MetaDataTable = new();
+            MetaDataTable.Columns.Add("attribute");
+            MetaDataTable.Columns.Add("value");*/
 
-                return MetaDataTable;
-            }
+            BitmapSource image = BitmapFrame.Create(fs);
+            BitmapMetadata metaData = image.Metadata as BitmapMetadata;
+
+            ImageDetailsModel imageDetails = new();
+            imageDetails.CameraModel = metaData.CameraModel;
+            imageDetails.Comment = metaData.Comment;
+            imageDetails.CopyRight = metaData.Copyright;
+            imageDetails.DateTaken = metaData.DateTaken;
+            imageDetails.Location = metaData.Location;
+            imageDetails.Format = metaData.Format;
+      
+            ImageDetails.Add(imageDetails);
+
+
+            /*MetaDataTable.Columns.Add("ApplicaionName", metaData.ApplicationName);
+            MetaDataTable.Columns.Add("Author", metaData.Author);
+            MetaDataTable.Columns.Add("CameraManufacturer", metaData.CameraManufacturer);
+            MetaDataTable.Columns.Add("CameraModel", metaData.CameraModel);
+            MetaDataTable.Columns.Add("CanFreez", metaData.CanFreeze);
+            MetaDataTable.Columns.Add("Comment", metaData.Comment);
+            MetaDataTable.Columns.Add("CopyRight", metaData.Copyright);
+            MetaDataTable.Columns.Add("DateTaken", metaData.DateTaken);
+            MetaDataTable.Columns.Add("DependencyObjectType", metaData.DependencyObjectType);
+            MetaDataTable.Columns.Add("Dispatcher", metaData.Dispatcher);
+            MetaDataTable.Columns.Add("Format", metaData.Format);
+            MetaDataTable.Columns.Add("IsFixedSize", metaData.IsFixedSize);
+            MetaDataTable.Columns.Add("IsFrozen", metaData.IsFrozen);
+            MetaDataTable.Columns.Add("IsReadOnly", metaData.IsReadOnly);
+            MetaDataTable.Columns.Add("IsSealed", metaData.IsSealed);
+            MetaDataTable.Columns.Add("Keywords", metaData.Keywords);
+            MetaDataTable.Columns.Add("Location", metaData.Location);
+            MetaDataTable.Columns.Add("Rating", metaData.Rating);
+            MetaDataTable.Columns.Add("Subject", metaData.Subject);
+            MetaDataTable.Columns.Add("Title", metaData.Title);
+            return MetaDataTabel;
+             */
+
         }
     }
 }

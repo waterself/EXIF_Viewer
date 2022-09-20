@@ -13,22 +13,21 @@ namespace EXIF_Viewer
 {
     public class MainModel : INotifyPropertyChanged
     {
-        public FileInfo? SelectedFile;
-        public DataTable? FileDataTable;
-        public MainModel()
+        private string? _selectedFile;
+
+        public string? SelctedFile
         {
-            SelectedFile = null;
-            FileDataTable = null;
+            get { return _selectedFile; }
+            set { _selectedFile = value; 
+            OnPropertyChanged(nameof(SelctedFile)); 
+            }
         }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged(String name)
-        {
-            if (PropertyChanged != null)
-            { 
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
+        public void OnPropertyChanged(string name) { 
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
         

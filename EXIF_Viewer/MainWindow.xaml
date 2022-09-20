@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EXIF_Viewer"
         mc:Ignorable="d"
-        Title="EXIF Viewer" Height="800" Width="450">
+        Title="EXIF Viewer" Height="450" Width="800">
     <Window.DataContext>
         <local:MainViewModel/>
     </Window.DataContext>
@@ -21,10 +21,9 @@
         </Grid.ColumnDefinitions>
         <Button Grid.Column="0" Content="파일 선택" Margin="5" Command="{Binding FileSelectButtonCommand}"/>
         <TextBlock Grid.Column="0" Grid.Row="1" FontSize="18" VerticalAlignment="Center"> 선택된 파일</TextBlock>
-        <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Text="{Binding Model.SelectedFile, UpdateSourceTrigger=PropertyChanged}"/>
-        <DataGrid Grid.Column="0" Grid.Row="2" ItemsSource="{Binding Model.FileDataTable}" SelectionChanged="DataGrid_SelectionChanged" Grid.ColumnSpan="2"/>
-
-
+        <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" Background="AliceBlue" Text="{Binding Model.SelctedFile, UpdateSourceTrigger=PropertyChanged}" FontSize="18"/>
+        <DataGrid ItemsSource="{Binding ImageDetails}" Grid.Column="0" Grid.Row="2" SelectionChanged="DataGrid_SelectionChanged" Grid.ColumnSpan="2"/>
+        
     </Grid>
 </Window>
 <!--        <DataGrid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" ItemsSource="{Binding Model.FileDataTable}">
